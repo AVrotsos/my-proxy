@@ -1,0 +1,3 @@
+#pattern  filter=crypt diff=crypt merge=crypt
+/roles/common/vars/common.yaml filter=crypt diff=crypt merge=crypt
+/roles/proxy/vars/proxy.yaml filter=crypt diff=crypt merge=crypt

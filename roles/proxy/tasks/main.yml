@@ -1,0 +1,55 @@
+---
+- name: Include proxy vars
+  ansible.builtin.include_vars:
+    file: vars/proxy.yaml
+
+- name: Install squid package
+  ansible.builtin.apt:
+    name: squid
+    state: present
+    update_cache: yes
+  become: yes
+
+- name: Install apache2-utils package
+  ansible.builtin.apt:
+    name: apache2-utils
+    state: present
+    update_cache: yes
+  become: yes
+
+- name: Install pip
+  apt:
+    update_cache: yes
+    name:
+      - python3-pip
+
+- name: Install pexpect
+  pip:
+    name: pexpect
+
+
+- name: Create htpasswd file with specified username and password
+  ansible.builtin.expect:
+    command: htpasswd -c /etc/squid/passwords {{ htpasswd_username }}
+    responses:
+      'New password:': "{{ htpasswd_password }}"
+      'Re-type new password:': "{{ htpasswd_password }}"
+    timeout: 10
+
+# my http_port: 31764
+# - name: Allow traffic on port 31764 through UFW
+#   ansible.builtin.ufw:
+#     rule: allow
+#     name: '31764'
+#     port: 31764
+#     state: enabled
+
+- name: Copy squid.conf file to server
+  copy:
+    src: squid.conf
+    dest: /etc/systemd/system
+    owner: root
+    group: root
+  notify:
+    - Start squid
+

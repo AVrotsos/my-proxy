@@ -1,0 +1,62 @@
+---
+- name: Include common vars
+  ansible.builtin.include_vars:
+    file: vars/common.yaml
+
+- name: Upgrade dependencies
+  ansible.builtin.apt:
+    update_cache: true
+    upgrade: full
+  tags: always
+
+- name: Install unattended-upgrades package
+  ansible.builtin.apt:
+    name: unattended-upgrades
+    state: present
+    update_cache: yes
+  become: yes
+
+# Note: These are some chatGPT steps, may not be reliable
+- name: Ensure unattended-upgrades is enabled
+  ansible.builtin.copy:
+    dest: /etc/apt/apt.conf.d/20auto-upgrades
+    content: |
+      APT::Periodic::Update-Package-Lists "1";
+      APT::Periodic::Unattended-Upgrade "1";
+  become: yes
+
+- name: Restart unattended-upgrades service
+  ansible.builtin.systemd:
+    name: unattended-upgrades
+    state: restarted
+  become: yes
+
+# Alternative
+# - name: Pre-configure unattended-upgrades
+#   ansible.builtin.debconf:
+#     name: unattended-upgrades
+#     question: "unattended-upgrades/enable_auto_updates"
+#     value: "true"
+#     vtype: "boolean"
+#   become: yes
+
+- name: Set Zeus authorized key
+  ansible.posix.authorized_key:
+    user: "{{ user }}"
+    key: "{{ zeus_ssh_key }}"
+    state: present
+
+- name: Set Vagrant authorized key
+  ansible.posix.authorized_key:
+    user: "{{ user }}"
+    key: "{{ vagrant_ssh_key }}"
+    state: present
+
+- name: Add system-wide alias ll='ls -al'
+  ansible.builtin.lineinfile:
+    path: /etc/profile
+    regexp: '^alias ll='
+    line: "alias ll='ls -al'"
+    state: present
+    create: yes
+  become: yes
