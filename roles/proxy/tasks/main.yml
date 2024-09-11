@@ -47,7 +47,7 @@
 - name: Copy squid.conf file to server
   copy:
     src: squid.conf
-    dest: /etc/systemd/system
+    dest: /etc/squid/
     owner: root
     group: root
   notify:

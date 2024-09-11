@@ -1,5 +1,5 @@
 ---
-- hosts: my_proxy
+- hosts: ttv_proxy
   roles:
     - common
     - proxy
