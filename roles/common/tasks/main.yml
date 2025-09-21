@@ -40,17 +40,17 @@
 #     vtype: "boolean"
 #   become: yes
 
-- name: Set Zeus authorized key
-  ansible.posix.authorized_key:
-    user: "{{ user }}"
-    key: "{{ zeus_ssh_key }}"
-    state: present
+# - name: Set Zeus authorized key
+#   ansible.posix.authorized_key:
+#     user: "{{ user }}"
+#     key: "{{ zeus_ssh_key }}"
+#     state: present
 
-- name: Set Vagrant authorized key
-  ansible.posix.authorized_key:
-    user: "{{ user }}"
-    key: "{{ vagrant_ssh_key }}"
-    state: present
+# - name: Set Vagrant authorized key
+#   ansible.posix.authorized_key:
+#     user: "{{ user }}"
+#     key: "{{ vagrant_ssh_key }}"
+#     state: present
 
 - name: Add system-wide alias ll='ls -al'
   ansible.builtin.lineinfile:
