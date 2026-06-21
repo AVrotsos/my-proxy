@@ -1,5 +1,5 @@
 ---
 - hosts: ttv_proxy
   roles:
-    - common
     - proxy
+    - wireguard

@@ -1,0 +1,5 @@
+wireguard_port: 51820
+wireguard_server_ip: "10.0.0.1/24"
+wireguard_client_ip: "10.0.0.2/32"
+wireguard_interface: "wg0"
+wireguard_key_dir: "/etc/wireguard"

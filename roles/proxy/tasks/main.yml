@@ -1,7 +1,45 @@
 ---
 - name: Include proxy vars
   ansible.builtin.include_vars:
-    file: vars/proxy.yaml
+    file: "{{ item }}"
+  loop:
+    - vars/proxy.yaml
+    - vars/secrets.yaml
+
+- name: Upgrade system packages
+  ansible.builtin.apt:
+    update_cache: true
+    upgrade: full
+  tags: always
+
+- name: Install unattended-upgrades package
+  ansible.builtin.apt:
+    name: unattended-upgrades
+    state: present
+    update_cache: yes
+  become: yes
+
+- name: Enable unattended-upgrades
+  ansible.builtin.copy:
+    dest: /etc/apt/apt.conf.d/20auto-upgrades
+    content: |
+      APT::Periodic::Update-Package-Lists "1";
+      APT::Periodic::Unattended-Upgrade "1";
+  become: yes
+
+- name: Restart unattended-upgrades service
+  ansible.builtin.systemd:
+    name: unattended-upgrades
+    state: restarted
+  become: yes
+
+- name: Add system-wide alias ll='ls -al'
+  ansible.builtin.lineinfile:
+    path: /etc/profile
+    regexp: '^alias ll='
+    line: "alias ll='ls -al'"
+    state: present
+  become: yes
 
 - name: Install squid package
   ansible.builtin.apt:
@@ -17,32 +55,12 @@
     update_cache: yes
   become: yes
 
-- name: Install pip
-  apt:
-    update_cache: yes
-    name:
-      - python3-pip
-
-- name: Install pexpect
-  pip:
-    name: pexpect
-
-
-- name: Create htpasswd file with specified username and password
-  ansible.builtin.expect:
-    command: htpasswd -c /etc/squid/passwords {{ htpasswd_username }}
-    responses:
-      'New password:': "{{ htpasswd_password }}"
-      'Re-type new password:': "{{ htpasswd_password }}"
-    timeout: 10
-
-# my http_port: 31764
-# - name: Allow traffic on port 31764 through UFW
-#   ansible.builtin.ufw:
-#     rule: allow
-#     name: '31764'
-#     port: 31764
-#     state: enabled
+- name: Create htpasswd file
+  ansible.builtin.shell:
+    cmd: htpasswd -cb /etc/squid/passwords {{ htpasswd_username }} {{ htpasswd_password }}
+    creates: /etc/squid/passwords
+  become: yes
+  no_log: true
 
 - name: Copy squid.conf file to server
   copy:
